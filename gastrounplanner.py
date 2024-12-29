@@ -60,9 +60,9 @@ def shifts2ical(shifts):
 
     for shift in shifts:
         ical += "BEGIN:VEVENT\n"
-        ical += f"SUMMARY: {shift.shift_name}\n"
-        ical += f"DTSTART: {datetime.datetime.strftime(shift.start, '%Y%m%dT%H%M%S')}\n"
-        ical += f"DTEND: {datetime.datetime.strftime(shift.end, '%Y%m%dT%H%M%S')}\n"
+        ical += f"SUMMARY:{shift.shift_name}\n"
+        ical += f"DTSTART:{datetime.datetime.strftime(shift.start, '%Y%m%dT%H%M%S')}\n"
+        ical += f"DTEND:{datetime.datetime.strftime(shift.end, '%Y%m%dT%H%M%S')}\n"
         ical += "END:VEVENT\n"
 
     ical += "END:VCALENDAR\n"
