@@ -22,3 +22,8 @@ It prints shifts that are since the 7 lasts days until the 30 next. This could b
 ```
 python gastrounplanner.py config.toml --since -2 --until 14
 ```
+
+The ical can be written to file, rather than stdout:
+```
+python gastrounplanner.py config.toml --output my-cal.ical
+```
