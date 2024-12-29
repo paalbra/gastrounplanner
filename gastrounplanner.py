@@ -119,6 +119,8 @@ class GastroUnplanner():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Creates an ical from a https://gastroplanner.eu/ instance.")
     parser.add_argument("config")
+    parser.add_argument("--since", type=int, default=-7)
+    parser.add_argument("--until", type=int, default=30)
     args = parser.parse_args()
 
     with open(args.config, "rb") as f:
@@ -126,7 +128,7 @@ if __name__ == "__main__":
 
     gu = GastroUnplanner(config["url"])
     gu.login(config["email"], config["password"])
-    # Get shifts since 7 days ago and until 30 days forward.
-    shifts = gu.get_shifts(-7, 30, name_filter=config.get("name_filter"))
+    # Get shifts. Since 7 days ago and until 30 days forward, by default.
+    shifts = gu.get_shifts(args.since, args.until, name_filter=config.get("name_filter"))
 
     print(shifts2ical(shifts), end="")
