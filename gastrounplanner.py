@@ -1,6 +1,7 @@
 import argparse
 import collections
 import datetime
+import logging
 import re
 import tomllib
 
@@ -14,6 +15,8 @@ Shift = collections.namedtuple("Shift", ["name", "shift_name", "start", "end"])
 def parse_timespan(time_range, date):
     # Parses a simple time range string, like "19:00-23:00", to an end and start time.
     # It needs the date for the start time.
+
+    logging.debug("Parsing time range, %s, of day %s", time_range, date.isoformat())
 
     date_str = datetime.datetime.strftime(date, "%Y-%m-%d")
     start_time_str, end_time_str = time_range.split("-")
@@ -41,9 +44,16 @@ def parse_shifts(content, date, truncate=False):
     for tr in soup.find_all("tr", {"class": "timetracker_row_expand"}):
         # Each tr is a single shift. The children tds contain data about the shift.
 
+        logging.debug("Parsing shift/html table row: %s", tr)
+
         tds = tr.find_all("td")
 
         name, _, shift_name = [element.text for element in tds[0].children]
+
+        if shift_name == "":
+            logging.warning("Skipping empty shift?: %s", repr(tr))
+            continue
+
         shift_timespan = tds[1].text
         start_time, end_time = parse_timespan(shift_timespan, date)
 
@@ -123,6 +133,8 @@ if __name__ == "__main__":
     parser.add_argument("--since", type=int, default=-7)
     parser.add_argument("--until", type=int, default=30)
     args = parser.parse_args()
+
+    logging.basicConfig(level=logging.WARNING)
 
     with open(args.config, "rb") as f:
         config = tomllib.load(f)
