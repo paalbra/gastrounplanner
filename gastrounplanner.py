@@ -1,9 +1,11 @@
 import argparse
 import collections
 import datetime
+import hashlib
 import logging
 import re
 import tomllib
+import uuid
 
 import requests
 from bs4 import BeautifulSoup
@@ -69,7 +71,10 @@ def shifts2ical(shifts):
     ical = "BEGIN:VCALENDAR\n"
 
     for shift in shifts:
+        md5 = hashlib.md5(f"{shift.shift_name}{shift.start}{shift.end}".encode("utf-8"))
+        uid = str(uuid.UUID(md5.hexdigest()))
         ical += "BEGIN:VEVENT\n"
+        ical += f"UID:{uid}\n"
         ical += f"SUMMARY:{shift.shift_name}\n"
         ical += f"DTSTART:{datetime.datetime.strftime(shift.start, '%Y%m%dT%H%M%S')}\n"
         ical += f"DTEND:{datetime.datetime.strftime(shift.end, '%Y%m%dT%H%M%S')}\n"
