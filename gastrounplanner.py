@@ -50,7 +50,8 @@ def parse_shifts(content, date, truncate=False):
 
         tds = tr.find_all("td")
 
-        name, _, shift_name = [element.text for element in tds[0].children]
+        # Some shifts have some extra weird values after the third one
+        name, _, shift_name, *_ = [element.text for element in tds[0].children]
 
         if shift_name == "":
             logging.warning("Skipping empty shift?: %s", repr(tr))
