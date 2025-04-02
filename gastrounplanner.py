@@ -111,23 +111,18 @@ class GastroUnplanner():
         else:
             raise Exception("Unable to login to: %s", repr(login_url))
 
-    def get_shifts(self, days_since, days_until, name_filter=None):
+    def get_shifts(self, days_since, days_until):
         if not self.logged_in:
             return
 
         shifts_url = self.base_url + "index.php?controller=TimeSheet&action=getPersonalList"
         today = datetime.datetime.today().date()
-        all_shifts = []
+        shifts = []
 
         for days in range(days_since, days_until):
             date = today + datetime.timedelta(days=days)
             response = self.session.post(shifts_url, data={"year": date.year, "month": date.month, "day": date.day}, headers={"X-Requested-With": "XMLHttpRequest"})
-            all_shifts.extend(parse_shifts(response.text, date, truncate=self.truncate))
-
-        if name_filter:
-            shifts = [shift for shift in all_shifts if re.search(name_filter, shift.name)]
-        else:
-            shifts = all_shifts
+            shifts.extend(parse_shifts(response.text, date, truncate=self.truncate))
 
         return shifts
 
@@ -135,7 +130,6 @@ class GastroUnplanner():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Creates an ical from a https://gastroplanner.eu/ instance.")
     parser.add_argument("config")
-    parser.add_argument("--output", help="Output to file rather than stdout")
     parser.add_argument("--since", type=int, default=-7)
     parser.add_argument("--until", type=int, default=30)
     args = parser.parse_args()
@@ -148,12 +142,11 @@ if __name__ == "__main__":
     gu = GastroUnplanner(config["url"])
     gu.login(config["email"], config["password"])
     # Get shifts. Since 7 days ago and until 30 days forward, by default.
-    shifts = gu.get_shifts(args.since, args.until, name_filter=config.get("name_filter"))
+    shifts = gu.get_shifts(args.since, args.until)
 
-    ical = shifts2ical(shifts)
+    for export in config["exports"]:
+        export_shifts = [shift for shift in shifts if re.search(export["name_filter"], shift.name)]
+        ical = shifts2ical(export_shifts)
 
-    if args.output:
-        with open(args.output, "w") as f:
+        with open(export["file_path"], "w") as f:
             f.write(ical)
-    else:
-        print(ical, end="")
