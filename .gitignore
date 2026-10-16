@@ -1,1 +1,7 @@
-config.toml
+# ignore configs
+**/*.toml
+
+# ignore icalendar results
+**/*.ical
+**/*.ics
+**/*.icalendar
